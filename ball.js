@@ -4,19 +4,20 @@ function Squid(x,y,r,rotation,color){
   this.y = y;
   this.r = r;
   this.rotation = rotation || 0 ;
-  this.rotcal = 1.12;
+  var a= 0;
   this.color = color || "#000000";
   var random = [];
   var vector = new Vector(mouse.x-this.x,mouse.y-this.y);
-  var image = new Image();
-  image.src = "img/spritesheet.jpg";
-  var imageWidth = 2888/19,
-		imageHeight = 88,
-		numberOnARow = 18,
-		NumberTotal = 36,
-    xpos = 0,
-    ypos = 0,
-    n = 0;
+
+    var image = new Image();
+    image.src = "img/spritesheet.jpg";
+    var imageWidth = 2888/19,
+  		imageHeight = 88,
+  		numberOnARow = 18,
+  		NumberTotal = 36,
+      xpos = 0,
+      ypos = 0,
+      n = 0;
 
   this.draw = function(context){
     xpos = (n%numberOnARow)*imageWidth;
@@ -25,51 +26,85 @@ function Squid(x,y,r,rotation,color){
     context.translate(this.x,this.y);
     context.rotate(this.rotation);
     context.translate(-this.x,-this.y);
-    context.drawImage(image,xpos,ypos,imageWidth,imageHeight,this.x,this.y,imageWidth,imageHeight);
+    context.drawImage(image,xpos,ypos,imageWidth,imageHeight,this.x-152,this.y-40,imageWidth,imageHeight);
     context.restore();
     if(n > NumberTotal){
       n = 0;
     }
     n++;
   }
+    //calculates the rotation of the squid
+    function calcRotation(speed,vector){
+        var posRight = 3-a+3+vector;
+        var posLeft = a-vector;
+        if(posLeft < posRight){
+          difference = posLeft;
+        }else{
+          difference = -posRight;
+        }
+        if(difference <= 0){
+          if(a >6){
+           return a = 0;
+          }else{
+           a= a +speed;
+           return a;
+          }
+        }else{
+          if(a <0){
+            return a = 6;
+          }else{
+          a = a -=speed;
+          return a;
+          }
+        }
+     }
+     var ai ={
+       //set random int in array
+       setRandom: function(x,y){
+         var xaxis = "xpos",
+         yaxis = "ypos",
+         Yval = Math.round(Math.random()*(canvas.height-y-y)+y);
+         Xval = Math.round(Math.random()*(canvas.width-x-x)+x);
+         random[xaxis] = Xval;
+         random[yaxis] = Yval;
+       },
+       //removes random int from array
+       removeRandom: function(){
+         delete random[xpos];
+         delete random[ypos];
+         ai.setRandom(142,90);
+       },
+       inRange: function(x,y,dx,dy){
+         console.log(x,y,dx,dy);
+         if(x >= dx-1 && x <= dx+1 && y >= dy-1 && y <=dy+1){
+           return true;
+        }
+       }
+     }
+    ai.setRandom(50,20);
 
   this.update = function(){
-    vector.r = 1;
+    vector.r = 1 * Math.pow(0.9, n-18);
+     this.x += vector.dx;
+     this.y += vector.dy;
 
-    this.x += vector.dx;
-    this.y += vector.dy;
-
-    if(mouse.event == null){
-      for(i =0; i<2; i++){
-        random.push(Math.random()*800);
-      }
-      vector.dx = random[0]-this.x;
-      vector.dy = random[1]-this.y;
-      console.log(this.x,random[0],this.y,random[1]);
-      if(this.y >= random[1] && this.x >= random[0]){
-        console.log('check');
-      }else{
-      }
+  if(mouse.event == null || mouse == undefined || mouse.x > canvas.width || mouse.y > canvas.height){
+      vector.dx = random.xpos-this.x;
+      vector.dy = random.ypos-this.y;
+      if(ai.inRange(this.x,this.y,random.xpos,random.ypos)== true){
+        ai.removeRandom();
+      };
     }else{
       vector.dx = mouse.x-this.x;
       vector.dy = mouse.y-this.y;
+      if(ai.inRange(this.x,this.y,mouse.x,mouse.y) == true){
+        ai.setRandom(50,20);
+      }
     }
-
-    var posLeft = this.rotcal-vector.hoek;
-    var posRight = 3-this.rotcal+3+vector.hoek;
-
-    if(posLeft < posRight){
-      var difference = posLeft;
-    }else{
-      var difference = -posRight;
-    }
-    if(difference < 0){
-      this.rotcal +=0.01;
-    }else{
-      this.rotcal -=0.01;
-    }
-    this.rotation = this.rotcal;
-  }
+    //  ai.inRange(this.x,this.y,vector.dx,vector.dy);
+    var difference = calcRotation(0.02,vector.hoek);
+    this.rotation = difference;
+   }
 }
 function Particle(x,y,dx,dy){
   var mouse = utils.captureMouse(canvas);

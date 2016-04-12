@@ -15,13 +15,14 @@ window.addEventListener("load",function(){
      particles.splice(0,11);
      }
    },2000);
-   
+   //squid.set();
+
 function animateCanvas(){
     window.requestAnimationFrame(animateCanvas);
     context.clearRect(0,0,1920,1080);
     for(var i = 0; i<particles.length;i++){
       particles[i].draw(context,squid.x,squid.y);
-      particles[i].update();
+        particles[i].update();
     }
     squid.update();
 
